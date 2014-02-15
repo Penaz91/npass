@@ -1,0 +1,3 @@
+- Create a better interface
+- Minimize imports
+- Create Somewhat faster code
