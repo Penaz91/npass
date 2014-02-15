@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+os.chdir(os.environ['HOME'])
 def Search(l,s):
     return [x for x in l if s.lower() in x.lower()]
 def ListDirs():
@@ -7,5 +8,3 @@ def ListDirs():
     y=[os.path.relpath(d,".password-store") for d in x]
     del x
     return y
-def SetupEnv():
-    os.chdir(os.environ["HOME"])
