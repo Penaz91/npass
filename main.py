@@ -13,7 +13,8 @@ curses.cbreak()
 screen.keypad(1)
 txtwin=curses.newwin(3,40,1,1)
 txtwin.border()
-passwin=curses.newpad(screen.getmaxyx()[0]-5,screen.getmaxyx()[1]-3)
+dim=screen.getmaxyx()
+passwin=curses.newpad(dim[0]-5,dim[1]-3)
 os.chdir(os.environ["HOME"])
 while True:
     global s
@@ -21,10 +22,10 @@ while True:
     global l
     for n in range(len(l)):
         if n==pos:
-            passwin.addstr(5+n,3,l[n],curses.A_REVERSE)
+            passwin.addstr(n,3,l[n],curses.A_REVERSE)
         else:
-            passwin.addstr(5+n,3,l[n])
-    passwin.refresh(pos,1,5,1,40,60)
+            passwin.addstr(n,3,l[n])
+    passwin.refresh(pos,1,5,1,dim[0]-5,dim[1]-3)
     txtwin.clear()
     c=screen.getch()
     if c==27:
@@ -61,14 +62,13 @@ while True:
         txtwin.addstr(1,3,s)
         l=functions.Search(l,s)
     screen.clear()
+    passwin.clear()
     txtwin.border()
     screen.border()
     screen.refresh()
     txtwin.refresh()
-    passwin.clear()
     passwin.border()
-    passwin.refresh(pos,1,5,1,screen.getmaxyx()[0]-5,screen.getmaxyx()[1]-3)
-    curses.doupdate()
+    passwin.refresh(pos,1,5,1,dim[0]-5,dim[1]-3)
 #Chiusura del programma
 curses.nocbreak()
 screen.keypad(0)
