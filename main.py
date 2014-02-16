@@ -25,7 +25,10 @@ while True:
             passwin.addstr(n,3,l[n],curses.A_REVERSE)
         else:
             passwin.addstr(n,3,l[n])
-    passwin.refresh(pos,1,5,1,dim[0]-5,dim[1]-3)
+    if pos>=(dim[0]-5)/4:
+        passwin.refresh(int(pos-(dim[0]-5)/4),1,5,1,dim[0]-5,dim[1]-3)
+    else:
+        passwin.refresh(0,1,5,1,dim[0]-5,dim[1]-3)
     txtwin.clear()
     c=screen.getch()
     if c==27:
