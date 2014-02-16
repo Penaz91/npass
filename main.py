@@ -20,7 +20,8 @@ os.chdir(os.environ["HOME"])
 #--------------------
 s=""
 pos=0
-l=functions.ListDirs()
+#l=functions.ListDirs()
+l=[str(f) for f in range(0,51)]
 #--------------------
 # Curses Init
 #--------------------
@@ -41,23 +42,28 @@ scroll=dim[0]-5<len(l)+2
 # Curses Loop
 #--------------------
 while True:
-    global s
-    global pos
-    global l
     for n in range(len(l)):
         if n==pos:
             passwin.addstr(n,3,l[n],curses.A_REVERSE)
         else:
             passwin.addstr(n,3,l[n])
+    #--------------------
+    # Screen Refresh
+    #--------------------
+    txtwin.border()
+    screen.border()
+    screen.refresh()
+    txtwin.refresh()
     if pos>=(dim[0]-5)/4 and scroll:
         passwin.refresh(int(pos-(dim[0]-5)/4),1,5,1,dim[0]-5,dim[1]-3)
     else:
         passwin.refresh(0,1,5,1,dim[0]-5,dim[1]-3)
-    txtwin.clear()
-    c=screen.getch()
     #--------------------
     # Capture KeyPresses
     #--------------------
+    c=screen.getch()
+    screen.clear()
+    passwin.clear()
     if c==27:
         #escape
         break
@@ -92,17 +98,6 @@ while True:
         s+=chr(c)
         txtwin.addstr(1,3,s)
         l=functions.Search(l,s)
-    #--------------------
-    # Screen Refresh
-    #--------------------
-    screen.clear()
-    passwin.clear()
-    txtwin.border()
-    screen.border()
-    screen.refresh()
-    txtwin.refresh()
-    passwin.border()
-    passwin.refresh(pos,1,5,1,dim[0]-5,dim[1]-3)
 #--------------------------------------------------
 #Program End & Cleanup
 #--------------------------------------------------
