@@ -20,8 +20,7 @@ os.chdir(os.environ["HOME"])
 #--------------------
 s=""
 pos=0
-#l=functions.ListDirs()
-l=[str(f) for f in range(0,51)]
+l=functions.ListDirs()
 #--------------------
 # Curses Init
 #--------------------
@@ -34,7 +33,7 @@ screen.keypad(1)
 # Curses Windows
 #--------------------
 dim=screen.getmaxyx()
-txtwin=curses.newwin(3,40,1,1)
+txtwin=curses.newwin(3,dim[1]-3,dim[0]-3,1)
 txtwin.border()
 passwin=curses.newpad(len(l)+2,dim[1]-3)
 scroll=dim[0]-5<len(l)+2
@@ -42,6 +41,7 @@ scroll=dim[0]-5<len(l)+2
 # Curses Loop
 #--------------------
 while True:
+    screen.addstr(2,int((dim[1]-5)/2),"nPass",curses.A_BOLD)
     for n in range(len(l)):
         if n==pos:
             passwin.addstr(n,3,l[n],curses.A_REVERSE)
@@ -51,6 +51,7 @@ while True:
     # Screen Refresh
     #--------------------
     txtwin.border()
+    txtwin.addstr(1,3,">>>  ")
     screen.border()
     screen.refresh()
     txtwin.refresh()
@@ -63,6 +64,7 @@ while True:
     #--------------------
     c=screen.getch()
     screen.clear()
+    txtwin.clear()
     passwin.clear()
     if c==27:
         #escape
@@ -72,7 +74,7 @@ while True:
         pos=0
         s=s[:-1]
         l=functions.Search(functions.ListDirs(),s)
-        txtwin.addstr(1,3,s)
+        txtwin.addstr(1,3,">>>  "+s)
     elif c==259:
         #Up Arrow
         if pos==0:
@@ -96,7 +98,7 @@ while True:
         #Letters/Numbers
         pos=0
         s+=chr(c)
-        txtwin.addstr(1,3,s)
+        txtwin.addstr(1,3,">>>  "+s)
         l=functions.Search(l,s)
 #--------------------------------------------------
 #Program End & Cleanup
