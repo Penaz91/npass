@@ -21,6 +21,8 @@ os.chdir(os.environ["HOME"])
 s=""
 pos=0
 l=functions.ListDirs()
+ignore_keys=set.union({f for f in range(265,277)},{262,260,261,ord("\t")})
+stack=[]
 #--------------------
 # Curses Init
 #--------------------
@@ -42,11 +44,12 @@ scroll=dim[0]-5<len(l)+2
 #--------------------
 while True:
     screen.addstr(2,int((dim[1]-5)/2),"nPass",curses.A_BOLD)
+    k=sorted(list(l))
     for n in range(len(l)):
         if n==pos:
-            passwin.addstr(n,3,l[n],curses.A_REVERSE)
+            passwin.addstr(n,3,k[n],curses.A_REVERSE)
         else:
-            passwin.addstr(n,3,l[n])
+            passwin.addstr(n,3,k[n])
     #--------------------
     # Screen Refresh
     #--------------------
@@ -67,41 +70,60 @@ while True:
     txtwin.clear()
     passwin.clear()
     if c==27:
-        #escape
+        #----------------------------------------
+        # Escape: Terminate
+        #----------------------------------------
         break
     elif c==127:
-        #backspace
+        #----------------------------------------
+        # Backspace: pop old content from stack
+        #----------------------------------------
         pos=0
         s=s[:-1]
-        l=functions.Search(functions.ListDirs(),s)
+        l=set.union(l,stack.pop())
         txtwin.addstr(1,3,">>>  "+s)
     elif c==259:
-        #Up Arrow
+        #----------------------------------------
+        # Up Arrow: Go up in the menu
+        #----------------------------------------
         if pos==0:
             pos=len(l)-1
         else:
             pos-=1
     elif c==258:
-        #Down Arrow
+        #----------------------------------------
+        # Down Arrow
+        #----------------------------------------
         if pos==len(l)-1:
             pos=0
         else:
             pos+=1
     elif c==10:
-        #Enter/Return
+        #----------------------------------------
+        # Enter/Return: display password
+        #----------------------------------------
         if len(l)==0:
             pass
         else:
-            Popen(["pass",l[pos]])
+            k=sorted(list(l))
+            Popen(["pass",k[pos]])
             break
+    elif c in ignore_keys:
+        #Ignore some keys
+        pass
     else:
-        #Letters/Numbers
+        #----------------------------------------
+        # Letters/Numbers: perform search
+        #----------------------------------------
         pos=0
         s+=chr(c)
         txtwin.addstr(1,3,">>>  "+s)
+        oldl=l
         l=functions.Search(l,s)
+        stack.append(oldl-l)
+        del oldl
 #--------------------------------------------------
-#Program End & Cleanup
+#Program Termination & Cleanup
 #--------------------------------------------------
 curses.nocbreak()
 screen.keypad(0)
