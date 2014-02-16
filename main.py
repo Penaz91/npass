@@ -1,21 +1,45 @@
 #!/usr/bin/env python3
+#--------------------------------------------------
+# nPass
+# A simple NCurses frontend for Pass
+# By Penaz
+#--------------------------------------------------
+#--------------------
+# Imports
+#--------------------
 import curses
 import functions
 import os
 from subprocess import Popen
+#--------------------
+# Environment Setup
+#--------------------
+os.chdir(os.environ["HOME"])
+#--------------------
+# Vars
+#--------------------
 s=""
 pos=0
 l=functions.ListDirs()
+#--------------------
+# Curses Init
+#--------------------
 screen=curses.initscr()
 screen.border()
 curses.noecho()
 curses.cbreak()
 screen.keypad(1)
+#--------------------
+# Curses Windows
+#--------------------
+dim=screen.getmaxyx()
 txtwin=curses.newwin(3,40,1,1)
 txtwin.border()
-dim=screen.getmaxyx()
-passwin=curses.newpad(dim[0]-5,dim[1]-3)
-os.chdir(os.environ["HOME"])
+passwin=curses.newpad(len(l)+2,dim[1]-3)
+scroll=dim[0]-5<len(l)+2
+#--------------------
+# Curses Loop
+#--------------------
 while True:
     global s
     global pos
@@ -25,12 +49,15 @@ while True:
             passwin.addstr(n,3,l[n],curses.A_REVERSE)
         else:
             passwin.addstr(n,3,l[n])
-    if pos>=(dim[0]-5)/4:
+    if pos>=(dim[0]-5)/4 and scroll:
         passwin.refresh(int(pos-(dim[0]-5)/4),1,5,1,dim[0]-5,dim[1]-3)
     else:
         passwin.refresh(0,1,5,1,dim[0]-5,dim[1]-3)
     txtwin.clear()
     c=screen.getch()
+    #--------------------
+    # Capture KeyPresses
+    #--------------------
     if c==27:
         #escape
         break
@@ -41,29 +68,33 @@ while True:
         l=functions.Search(functions.ListDirs(),s)
         txtwin.addstr(1,3,s)
     elif c==259:
-        #Su
+        #Up Arrow
         if pos==0:
             pos=len(l)-1
         else:
             pos-=1
     elif c==258:
-        #giu
+        #Down Arrow
         if pos==len(l)-1:
             pos=0
         else:
             pos+=1
     elif c==10:
-        #enter
+        #Enter/Return
         if len(l)==0:
             pass
         else:
             Popen(["pass",l[pos]])
             break
     else:
+        #Letters/Numbers
         pos=0
         s+=chr(c)
         txtwin.addstr(1,3,s)
         l=functions.Search(l,s)
+    #--------------------
+    # Screen Refresh
+    #--------------------
     screen.clear()
     passwin.clear()
     txtwin.border()
@@ -72,7 +103,9 @@ while True:
     txtwin.refresh()
     passwin.border()
     passwin.refresh(pos,1,5,1,dim[0]-5,dim[1]-3)
-#Chiusura del programma
+#--------------------------------------------------
+#Program End & Cleanup
+#--------------------------------------------------
 curses.nocbreak()
 screen.keypad(0)
 curses.echo()
