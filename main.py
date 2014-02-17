@@ -10,6 +10,7 @@
 import curses
 import functions
 import os
+import sys
 from subprocess import Popen
 #--------------------
 # Environment Setup
@@ -23,6 +24,13 @@ pos=0
 l=functions.ListDirs()
 ignore_keys=set.union({f for f in range(265,277)},{262,260,261,ord("\t")})
 stack=[]
+copy=False
+#--------------------
+# Argument detection
+#--------------------
+if len(sys.argv)>1:
+    if sys.argv[1] in {"-c","--clip"}:
+        copy=True
 #--------------------
 # Curses Init
 #--------------------
@@ -100,13 +108,16 @@ while True:
             pos+=1
     elif c==10:
         #----------------------------------------
-        # Enter/Return: display password
+        # Enter/Return: display/copy password
         #----------------------------------------
         if len(l)==0:
             pass
         else:
             k=sorted(list(l))
-            Popen(["pass",k[pos]])
+            if copy:
+                Popen(["pass","-c",k[pos]])
+            else:
+                Popen(["pass",k[pos]])
             break
     elif c in ignore_keys:
         #Ignore some keys
