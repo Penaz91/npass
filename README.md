@@ -8,5 +8,6 @@ Select password to show:
 > npass
 Select password and copy to clipboard for 45 seconds:
 > npass -c
-or
+<or
 > npass --clip
+<
