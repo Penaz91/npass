@@ -1,16 +1,18 @@
 Npass
 =====
-A NCurses frontend for the Pass password manager
+A NCurses frontend for the [Pass password manager](http://www.zx2c4.com/projects/password-store/)
 
 Usage
 -----
 Select password to show:
-npass
+>npass
 
-Select password and copy to clipboard for 45 seconds:
-npass -c
+Select and copy password to clipboard for 45 seconds:
+>npass -c
+
 or
-npass --clip
+
+>npass --clip
 
 Screenshots (At 2014/02/18)
 ---------------------------
