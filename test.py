@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
+#-----------------------------
+# UnitTest suite for npass
+# Part of the Npass Project
+# By Penaz.
+#-----------------------------
 import unittest
 import functions
-#The search must work correctly
+#-----------------------------
+# Search must work correctly
+#-----------------------------
 class SearchTest(unittest.TestCase):
     def test(self):
         x=["abc","abd","bdc","cdd"]
         y=functions.Search(x,"a")
         self.assertEqual(y,["abc","abd"])
-#I have a password store, so the list directory function must provide a non-empty list without gpg-id
+#-----------------------------
+#I have a password store, so the 
+#function must provide a non-empty
+#set without the .gpg-id file
+#-----------------------------
 class ListTest(unittest.TestCase):
     def testempty(self):
         self.assertNotEqual(functions.ListDirs(),[])
@@ -15,3 +26,6 @@ class ListTest(unittest.TestCase):
         self.assertNotIn(".gpg-id",functions.ListDirs())
 if __name__=="__main__":
     unittest.main()
+#-----------------------------
+#TODO: Add more tests for curses
+#-----------------------------
