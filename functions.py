@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
+#-----------------------------
+# Functions.py
+# Part of the npass project
+# By Penaz
+#-----------------------------
 import os
 os.chdir(os.environ['HOME'])
+#-----------------------------
+# Filter the set "l"
+#-----------------------------
 def Search(l,s):
     return {x for x in l if s.lower() in x.lower()}
+#-----------------------------
+# List all passwords
+#-----------------------------
 def ListDirs():
     x={os.path.join(dp,f) for dp, dn, fn in os.walk(os.path.expanduser("~/.password-store/")) for f in fn if ".gpg-id" not in f}
     y={os.path.relpath(d,".password-store") for d in x}
