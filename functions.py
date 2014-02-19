@@ -4,8 +4,12 @@
 # Part of the npass project
 # By Penaz
 #-----------------------------
-import os
-os.chdir(os.environ['HOME'])
+
+#-----------------------------
+# Imports
+#-----------------------------
+from os.path import join, relpath, splitext, expanduser
+from os import walk
 #-----------------------------
 # Filter the set "l"
 #-----------------------------
@@ -15,8 +19,8 @@ def Search(l,s):
 # List all passwords
 #-----------------------------
 def ListDirs():
-    x={os.path.join(dp,f) for dp, dn, fn in os.walk(os.path.expanduser("~/.password-store/")) for f in fn if ".gpg-id" not in f}
-    y={os.path.relpath(d,".password-store") for d in x}
-    x={os.path.splitext(l)[0] for l in y}
+    x={join(dp,f) for dp, dn, fn in walk(expanduser("~/.password-store/")) for f in fn if ".gpg-id" not in f}
+    y={relpath(d,".password-store") for d in x}
+    x={splitext(l)[0] for l in y}
     del y
     return x

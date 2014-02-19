@@ -13,11 +13,11 @@ class SearchTest(unittest.TestCase):
     def test(self):
         x=["abc","abd","bdc","cdd"]
         y=functions.Search(x,"a")
-        self.assertEqual(y,["abc","abd"])
+        self.assertEqual(y,{"abc","abd"})
 #-----------------------------
-#I have a password store, so the 
-#function must provide a non-empty
-#set without the .gpg-id file
+# I have a password store, so the 
+# function must provide a non-empty
+# set without the .gpg-id file
 #-----------------------------
 class ListTest(unittest.TestCase):
     def testempty(self):
@@ -26,6 +26,3 @@ class ListTest(unittest.TestCase):
         self.assertNotIn(".gpg-id",functions.ListDirs())
 if __name__=="__main__":
     unittest.main()
-#-----------------------------
-#TODO: Add more tests for curses
-#-----------------------------

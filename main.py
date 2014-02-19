@@ -9,13 +9,13 @@
 #--------------------
 import curses
 import functions
-import os
-import sys
+from os import chdir, environ
+from sys import argv
 from subprocess import Popen
 #--------------------
 # Environment Setup
 #--------------------
-os.chdir(os.environ["HOME"])
+chdir(environ["HOME"])
 #--------------------
 # Vars
 #--------------------
@@ -28,8 +28,8 @@ copy=False
 #--------------------
 # Argument detection
 #--------------------
-if len(sys.argv)>1:
-    if sys.argv[1] in {"-c","--clip"}:
+if len(argv)>1:
+    if argv[1] in {"-c","--clip"}:
         copy=True
 #--------------------
 # Curses Init
@@ -52,6 +52,11 @@ scroll=dim[0]-5<len(l)+2
 #--------------------
 while True:
     screen.addstr(2,int((dim[1]-5)/2),"nPass",curses.A_BOLD)
+    if copy:
+        screen.addstr(3,int((dim[1]-15)/2),"-- Copy Mode --",curses.A_BOLD)
+    else:
+        screen.addstr(3,int((dim[1]-18)/2),"-- Display Mode --",curses.A_BOLD)
+    screen.hline(4,1,curses.ACS_HLINE,dim[1]-2)
     k=sorted(list(l))
     for n in range(len(l)):
         if n==pos:
@@ -88,7 +93,8 @@ while True:
         #----------------------------------------
         pos=0
         s=s[:-1]
-        l=set.union(l,stack.pop())
+        if len(stack)>0:
+           l=set.union(l,stack.pop())
         txtwin.addstr(1,3,">>>  "+s)
     elif c==259:
         #----------------------------------------
@@ -100,7 +106,7 @@ while True:
             pos-=1
     elif c==258:
         #----------------------------------------
-        # Down Arrow
+        # Down Arrow: Go Down in the menu
         #----------------------------------------
         if pos==len(l)-1:
             pos=0
@@ -119,9 +125,11 @@ while True:
             else:
                 Popen(["pass",k[pos]])
             break
+        #----------------------------------------
+        # Ignore some Keys
+        #----------------------------------------
     elif c in ignore_keys:
-        #Ignore some keys
-        pass
+        txtwin.addstr(1,3,">>>  "+s)
     else:
         #----------------------------------------
         # Letters/Numbers: perform search
