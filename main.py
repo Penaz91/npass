@@ -22,7 +22,7 @@ chdir(environ["HOME"])
 s=""
 pos=0
 l=functions.ListDirs()
-ignore_keys=set.union({f for f in range(265,277)},{262,260,261,ord("\t")})
+ignore_keys=set.union({f for f in range(265,328)},{262,260,261,ord("\t"),curses.KEY_IC})
 stack=[]
 copy=False
 #--------------------
@@ -87,24 +87,24 @@ while True:
         # Escape: Terminate
         #----------------------------------------
         break
-    elif c==127:
+    elif c==127 or c==curses.KEY_DC:
         #----------------------------------------
-        # Backspace: pop old content from stack
+        # Backspace/Delete Char: pop old content from stack
         #----------------------------------------
         pos=0
         s=s[:-1]
         if len(stack)>0:
            l=set.union(l,stack.pop())
         txtwin.addstr(1,3,">>>  "+s)
-    elif c==259:
+    elif c==259 or c==curses.KEY_PPAGE:
         #----------------------------------------
-        # Up Arrow: Go up in the menu
+        # Up Arrow/PGUP: Go up in the menu
         #----------------------------------------
         if pos==0:
             pos=len(l)-1
         else:
             pos-=1
-    elif c==258:
+    elif c==258 or curses.KEY_NPAGE:
         #----------------------------------------
         # Down Arrow: Go Down in the menu
         #----------------------------------------
