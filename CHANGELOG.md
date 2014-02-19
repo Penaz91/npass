@@ -2,6 +2,7 @@ Changelog
 =========
 2014/02/19
 -----------
+- Added Man Page
 - Less imports
 - UnitTests fixed
 - Small bugfixes here and there
