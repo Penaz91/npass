@@ -46,7 +46,7 @@ dim=screen.getmaxyx()
 txtwin=curses.newwin(3,dim[1]-3,dim[0]-3,1)
 txtwin.border()
 passwin=curses.newpad(len(l)+2,dim[1]-3)
-scroll=dim[0]-5<len(l)+2
+scroll=dim[0]-10<len(l)+2
 #--------------------
 # Curses Loop
 #--------------------
@@ -60,9 +60,9 @@ while True:
     k=sorted(list(l))
     for n in range(len(l)):
         if n==pos:
-            passwin.addstr(n,3,k[n],curses.A_REVERSE)
+            passwin.addstr(n,3,functions.ShortenPath(k[n],dim[1]),curses.A_REVERSE)
         else:
-            passwin.addstr(n,3,k[n])
+            passwin.addstr(n,3,functions.ShortenPath(k[n],dim[1]))
     #--------------------
     # Screen Refresh
     #--------------------
@@ -104,7 +104,7 @@ while True:
             pos=len(l)-1
         else:
             pos-=1
-    elif c==258 or curses.KEY_NPAGE:
+    elif c==258 or c==curses.KEY_NPAGE:
         #----------------------------------------
         # Down Arrow: Go Down in the menu
         #----------------------------------------

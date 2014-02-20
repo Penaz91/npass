@@ -1,5 +1,8 @@
 Changelog
 =========
+2014/02/20
+- Path Shortening
+
 2014/02/19
 -----------
 - Less imports
