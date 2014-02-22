@@ -48,6 +48,15 @@ txtwin.border()
 passwin=curses.newpad(len(l)+2,dim[1]-3)
 scroll=dim[0]-10<len(l)+2
 #--------------------
+# Termination handler
+#--------------------
+def term():
+    curses.nocbreak()
+    screen.keypad(0)
+    curses.echo()
+    curses.endwin()
+    quit()
+#--------------------
 # Curses Loop
 #--------------------
 while True:
@@ -144,8 +153,4 @@ while True:
 #--------------------------------------------------
 #Program Termination & Cleanup
 #--------------------------------------------------
-curses.nocbreak()
-screen.keypad(0)
-curses.echo()
-curses.endwin()
-quit()
+term()
