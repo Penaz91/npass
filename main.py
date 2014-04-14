@@ -24,13 +24,14 @@ pos=0
 l=functions.ListDirs()
 ignore_keys=set.union({f for f in range(265,328)},{262,260,261,ord("\t"),curses.KEY_IC})
 stack=[]
-copy=False
+mode=0      #0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
 #--------------------
 # Argument detection
 #--------------------
+# TODO: Nuova gestione argomenti
 if len(argv)>1:
     if argv[1] in {"-c","--clip"}:
-        copy=True
+        mode=1
 #--------------------
 # Curses Init
 #--------------------
@@ -47,6 +48,8 @@ txtwin=curses.newwin(3,dim[1]-3,dim[0]-3,1)
 txtwin.border()
 passwin=curses.newpad(len(l)+2,dim[1]-3)
 scroll=dim[0]-10<len(l)+2
+curses.start_color()
+curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
 #--------------------
 # Termination handler
 #--------------------
@@ -61,10 +64,14 @@ def term():
 #--------------------
 while True:
     screen.addstr(2,int((dim[1]-5)/2),"nPass",curses.A_BOLD)
-    if copy:
-        screen.addstr(3,int((dim[1]-15)/2),"-- Copy Mode --",curses.A_BOLD)
-    else:
-        screen.addstr(3,int((dim[1]-18)/2),"-- Display Mode --",curses.A_BOLD)
+    if mode==0:
+        screen.addstr(3,int((dim[1]-13)/2),"<- Display ->",curses.A_BOLD)
+    elif mode==1:
+        screen.addstr(3,int((dim[1]-10)/2),"<- Copy ->",curses.A_BOLD)
+    elif mode==2:
+        screen.addstr(3,int((dim[1]-10)/2),"<- Edit ->",curses.A_BOLD)
+    elif mode==3:
+        screen.addstr(3,int((dim[1]-18)/2),"<- !!! Delete !!! ->",curses.color_pair(1))
     screen.hline(4,1,curses.ACS_HLINE,dim[1]-2)
     k=sorted(list(l))
     for n in range(len(l)):
@@ -123,17 +130,32 @@ while True:
             pos+=1
     elif c==10:
         #----------------------------------------
-        # Enter/Return: display/copy password
+        # Enter/Return: <action> password
         #----------------------------------------
+        #TODO: Nuove azioni per il tasto enter a seconda del modo
         if len(l)==0:
             pass
         else:
             k=sorted(list(l))
-            if copy:
+            if mode==1:
                 Popen(["pass","-c",k[pos]])
             else:
                 Popen(["pass",k[pos]])
             break
+    elif c==260:
+        #----------------------------------------
+        # Left arrow: Change mode left
+        #----------------------------------------
+        mode-=1
+        if mode<0:
+            mode=3
+    elif c==261:
+        #----------------------------------------
+        # Right arrow: Change mode Right
+        #----------------------------------------
+        mode+=1
+        if mode>3:
+            mode=0
         #----------------------------------------
         # Ignore some Keys
         #----------------------------------------
