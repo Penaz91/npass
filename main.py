@@ -11,7 +11,7 @@ import curses
 import functions
 from os import chdir, environ
 from sys import argv
-from subprocess import Popen
+from subprocess import call
 #--------------------
 # Environment Setup
 #--------------------
@@ -28,10 +28,24 @@ mode=0      #0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
 #--------------------
 # Argument detection
 #--------------------
-# TODO: Nuova gestione argomenti
 if len(argv)>1:
     if argv[1] in {"-c","--clip"}:
         mode=1
+    if argv[1] in {"-e","--edit"}:
+        mode=2
+    if argv[1] in {"-d","--delete"}:
+        mode=3
+    if argv[1] in {"-h","--help"}:
+        print("Npass - A simple ncurses frontend for Pass")
+        print("Usage:")
+        print("npass  -  Show password list")
+        print("npass [-c,--clip]  -  Open npass in copy mode")
+        print("npass [-e,--edit]  -  Open npass in edit mode")
+        print("npass [-d,--delete]  -  Open npass in delete mode")
+        print("npass [-h,--help]  -  Show this help page")
+        quit()
+if len(argv)>2:
+    quit("Too many arguments\nTry with fewer arguments.")
 #--------------------
 # Curses Init
 #--------------------
@@ -55,10 +69,9 @@ curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
 #--------------------
 def term():
     curses.nocbreak()
-    screen.keypad(0)
+    screen.keypad(False)
     curses.echo()
     curses.endwin()
-    quit()
 #--------------------
 # Curses Loop
 #--------------------
@@ -137,10 +150,18 @@ while True:
             pass
         else:
             k=sorted(list(l))
+            if mode==0:
+                term()
+                call(["pass",k[pos]])
             if mode==1:
-                Popen(["pass","-c",k[pos]])
-            else:
-                Popen(["pass",k[pos]])
+                term()
+                call(["pass","-c",k[pos]])
+            elif mode==2:
+                term()
+                call(["pass","edit",k[pos]])
+            elif mode==3:
+                term()
+                call(["pass","rm",k[pos]])
             break
     elif c==260:
         #----------------------------------------
@@ -176,3 +197,4 @@ while True:
 #Program Termination & Cleanup
 #--------------------------------------------------
 term()
+quit()
