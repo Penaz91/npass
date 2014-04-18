@@ -10,25 +10,51 @@ Npass is a simple Ncurses interface for Pass - The Standard Unix Password Manage
 Npass makes the user able to search for his passwords in a faster way.
 Npass requires Pass to work.
 .SH OPTIONS
+[
 .B -c
-or
+,
 .B --clip
+,
+.B --copy
+]
 Copy the first line of the password field to the clipboard. The clipboard will be erased in 45 Seconds
 .PP
+[
 .B -d
-or
+,
 .B --delete
+]
 Delete the selected password when pressing enter.
 .PP
+[
 .B -e
-or
+,
 .B --edit
+]
 Edit the selected password when pressing Enter.
 .PP
+[
 .B -h
-or
+,
 .B --help
+]
 Show a little help message.
+.PP
+.SH KEYS
+.B Up/Down Arrow
+Highlight previous/next password.
+.PP
+.B Left/Right Arrow
+Change mode (Display, Copy, Edit, Delete).
+.PP
+.B Enter
+Execute the current action on the selected password.
+.PP
+.B [A-z], [0-9] and some symbols
+Search for password
+.PP
+.B Escape (ESC)
+Exit npass.
 .PP
 .SH AUTHOR
 Penazzo Daniele (aka Penaz) (author, current maintainer)

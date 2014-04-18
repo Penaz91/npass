@@ -5,8 +5,4 @@ TODO
 
 Other less important things
 ---------------------------
-- Call directly pass when arguments:
-	- Add
-	- Rm
-	- etc...
 - Create a Gentoo Ebuild

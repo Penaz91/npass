@@ -14,6 +14,22 @@ or
 
 >npass --clip
 
+Edit the selected password when pressing enter:
+>npass -e
+
+or
+
+>npass --edit
+
+Delete the selected password when pressing enter:
+>npass -d
+
+or
+
+>npass --delete
+
+Now the interface is modal, so you can change mode just by pressing the left or right arrow key
+
 Screenshots (At 2014/02/20)
 ---------------------------
 ![npass Screenshot 1](http://penazarea.altervista.org/wp-content/uploads/2014/02/npass1.png "Screenshot 1")

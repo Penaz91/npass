@@ -1,6 +1,12 @@
 Changelog
 =========
+2014/04/18
+- Merging to master branch
+- Readme Updated
+- Manual page updated
+
 2014/04/15
+-----------
 - "modal" interface completed
 - Added support for delete via Pass
 - Added support for password editing via Pass

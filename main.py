@@ -11,7 +11,7 @@ import curses
 import functions
 from os import chdir, environ
 from sys import argv
-from subprocess import call
+from subprocess import call, Popen
 #--------------------
 # Environment Setup
 #--------------------
@@ -29,7 +29,7 @@ mode=0      #0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
 # Argument detection
 #--------------------
 if len(argv)>1:
-    if argv[1] in {"-c","--clip"}:
+    if argv[1] in {"-c","--clip","--copy"}:
         mode=1
     if argv[1] in {"-e","--edit"}:
         mode=2
@@ -152,7 +152,7 @@ while True:
             k=sorted(list(l))
             if mode==0:
                 term()
-                call(["pass",k[pos]])
+                Popen(["pass",k[pos]])
             if mode==1:
                 term()
                 call(["pass","-c",k[pos]])
