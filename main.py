@@ -15,7 +15,7 @@ from subprocess import call, Popen
 #--------------------
 # Environment Setup
 #--------------------
-chdir(environ["HOME"])
+chdir(environ["HOME"]) 
 #--------------------
 # Vars
 #--------------------
@@ -55,6 +55,14 @@ curses.noecho()
 curses.cbreak()
 screen.keypad(1)
 #--------------------
+# Termination handler
+#--------------------
+def term():
+    curses.nocbreak()
+    screen.keypad(False)
+    curses.echo()
+    curses.endwin()
+#--------------------
 # Curses Windows
 #--------------------
 dim=screen.getmaxyx()
@@ -64,14 +72,6 @@ passwin=curses.newpad(len(l)+2,dim[1]-3)
 scroll=dim[0]-10<len(l)+2
 curses.start_color()
 curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-#--------------------
-# Termination handler
-#--------------------
-def term():
-    curses.nocbreak()
-    screen.keypad(False)
-    curses.echo()
-    curses.endwin()
 #--------------------
 # Curses Loop
 #--------------------
@@ -96,7 +96,7 @@ while True:
     # Screen Refresh
     #--------------------
     txtwin.border()
-    txtwin.addstr(1,3,">>>  ")
+    txtwin.addstr(1,3,"Search >>> ")
     screen.border()
     screen.refresh()
     txtwin.refresh()
@@ -124,7 +124,7 @@ while True:
         s=s[:-1]
         if len(stack)>0:
            l=set.union(l,stack.pop())
-        txtwin.addstr(1,3,">>>  "+s)
+        txtwin.addstr(1,3,"Search >>>  "+s)
     elif c==259 or c==curses.KEY_PPAGE:
         #----------------------------------------
         # Up Arrow/PGUP: Go up in the menu
@@ -145,7 +145,6 @@ while True:
         #----------------------------------------
         # Enter/Return: <action> password
         #----------------------------------------
-        #TODO: Nuove azioni per il tasto enter a seconda del modo
         if len(l)==0:
             pass
         else:
@@ -181,14 +180,14 @@ while True:
         # Ignore some Keys
         #----------------------------------------
     elif c in ignore_keys:
-        txtwin.addstr(1,3,">>>  "+s)
+        txtwin.addstr(1,3,"Search >>>  "+s)
     else:
         #----------------------------------------
         # Letters/Numbers: perform search
         #----------------------------------------
         pos=0
         s+=chr(c)
-        txtwin.addstr(1,3,">>>  "+s)
+        txtwin.addstr(1,3,"Search >>>  "+s)
         oldl=l
         l=functions.Search(l,s)
         stack.append(oldl-l)
