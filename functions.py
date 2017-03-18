@@ -19,7 +19,12 @@ def Search(l,s):
 # List all passwords
 #-----------------------------
 def ListDirs():
-    x={join(dp,f) for dp, dn, fn in walk(expanduser("~/.password-store/")) for f in fn if ".gpg-id" not in f}
+    exclude = set([".gpg-id", ".git"])
+    x={join(dp,f) for dp, dn, fn in walk(expanduser("~/.password-store/")) for f in fn}
+    toexclude=set([])
+    for exclusion in exclude:
+        toexclude = set([item for item in x if exclusion in item])
+        x=x.difference(toexclude)
     y={relpath(d,".password-store") for d in x}
     x={splitext(l)[0] for l in y}
     del y
