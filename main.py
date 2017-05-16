@@ -11,7 +11,7 @@ import curses
 import functions
 from os import chdir, environ
 from sys import argv
-from subprocess import call, Popen
+from subprocess import Popen, PIPE
 # --------------------
 # Environment Setup
 # --------------------
@@ -157,18 +157,36 @@ while running:
             pass
         else:
             k = sorted(list(l))
+            proc = None
+            stdout , stderr = b"", b""
             if mode == 0:
                 term()
-                Popen(["pass", k[pos]])
+                proc = Popen(["pass", k[pos]], stdout=PIPE, stderr=PIPE)
+                stdout, stderr = proc.communicate()
             if mode == 1:
                 term()
-                call(["pass", "-c", k[pos]])
+                proc = Popen(["pass", "-c", k[pos]], stdout=PIPE, stderr=PIPE)
+                if proc.returncode == 0:
+                    quit()
             elif mode == 2:
                 term()
-                call(["pass", "edit", k[pos]])
+                proc = Popen(["pass", "edit", k[pos]], stdout=PIPE, stderr=PIPE)
+                if proc.returncode == 0:
+                    quit()
             elif mode == 3:
                 term()
-                call(["pass", "rm", k[pos]])
+                proc = Popen(["pass", "rm", k[pos]], stdout=PIPE, stderr=PIPE)
+                if proc.returncode == 0:
+                    quit()
+            stdout = stdout.decode("UTF-8").strip("\n")
+            stderr = stderr.decode("UTF-8").strip("\n")
+            if stdout != "":
+                print("----------<>----------")
+                print(stdout)
+                print("----------<>----------")
+            if stderr != "":
+                print("Errors detected:")
+                print(stderr)
             running = False
     elif c == 260:
         # ----------------------------------------
