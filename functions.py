@@ -10,13 +10,21 @@
 # -----------------------------
 from os.path import join, relpath, splitext, expanduser
 from os import walk
+import re
 
 
 # -----------------------------
 # Filter the set "l"
 # -----------------------------
-def Search(l, s):
-    return {x for x in l if s.lower() in x.lower()}
+def Search(coll, inp):
+    suggestions = []
+    pattern = '.*?'.join(inp)   # Converts 'djm' to 'd.*?j.*?m'
+    regex = re.compile(pattern, re.IGNORECASE)  # Compiles a regex.
+    for item in coll:
+        match = regex.search(item, re.IGNORECASE)   # Checks if the current item matches the regex.
+        if match:
+            suggestions.append((len(match.group()), match.start(), item))
+    return {x for _, _, x in sorted(suggestions)}
 
 
 # -----------------------------

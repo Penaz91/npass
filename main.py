@@ -29,10 +29,10 @@ def main(screen):
     running = True
     s = ""
     pos = 0
-    l = functions.ListDirs()
+    dirlist = functions.ListDirs()
+    l = dirlist
     ignore_keys = set.union({f for f in range(265, 328)}, {262, 260,
                             261, ord("\t"), curses.KEY_IC})
-    stack = []
     mode = 0      # 0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
     global stdout
     global stderr
@@ -132,11 +132,10 @@ def main(screen):
             # ----------------------------------------
             pos = 0
             s = s[:-1]
-            if len(stack) > 0:
-                l = set.union(l, stack.pop())
             txtwin.addstr(1, 3, "Search >>>  "+s)
             if aboutToDelete:
                 aboutToDelete = False
+            l = functions.Search(dirlist, s)
         elif c == 259 or c == curses.KEY_PPAGE:
             # ----------------------------------------
             # Up Arrow/PGUP: Go up in the menu
@@ -215,10 +214,7 @@ def main(screen):
             pos = 0
             s += chr(c)
             txtwin.addstr(1, 3, "Search >>>  "+s)
-            oldl = l
-            l = functions.Search(l, s)
-            stack.append(oldl-l)
-            del oldl
+            l = functions.Search(dirlist, s)
             if aboutToDelete:
                 aboutToDelete = False
 
