@@ -9,16 +9,17 @@
 # --------------------
 import curses
 import functions
-from os import chdir, environ
+from os import chdir, environ, remove
+from os.path import join, expanduser
 from sys import argv
 from subprocess import Popen, PIPE
-
 
 # --------------------
 # Environment Setup
 # --------------------
 chdir(environ["HOME"])
 stdout, stderr = b"", b""
+status = 0
 
 
 def main(screen):
@@ -35,6 +36,8 @@ def main(screen):
     mode = 0      # 0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
     global stdout
     global stderr
+    global aboutToDelete
+    aboutToDelete = False
     # --------------------
     # Argument detection
     # --------------------
@@ -66,6 +69,7 @@ def main(screen):
     scroll = dim[0]-10 < len(l)+2
     curses.start_color()
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     # --------------------
     # Curses Loop
     # --------------------
@@ -79,14 +83,23 @@ def main(screen):
         elif mode == 2:
             screen.addstr(3, int((dim[1]-10)/2), "<- Edit ->", curses.A_BOLD)
         elif mode == 3:
-            screen.addstr(3, int((dim[1]-18)/2), "<- !!! Delete !!! ->",
-                          curses.color_pair(1))
+            if aboutToDelete:
+                screen.addstr(3, int((dim[1]-56)/2),
+                              "<- Press ENTER again to delete, any other key to Abort ->",
+                              curses.color_pair(2))
+            else:
+                screen.addstr(3, int((dim[1]-20)/2), "<- !!! Delete !!! ->",
+                              curses.color_pair(1))
         screen.hline(4, 1, curses.ACS_HLINE, dim[1]-2)
         k = sorted(list(l))
         for n in range(len(l)):
             if n == pos:
-                passwin.addstr(n, 3, functions.ShortenPath(k[n], dim[1]),
-                               curses.A_REVERSE)
+                if aboutToDelete:
+                    passwin.addstr(n, 3, functions.ShortenPath(k[n], dim[1]),
+                                   curses.color_pair(2))
+                else:
+                    passwin.addstr(n, 3, functions.ShortenPath(k[n], dim[1]),
+                                   curses.A_REVERSE)
             else:
                 passwin.addstr(n, 3, functions.ShortenPath(k[n], dim[1]))
         # --------------------
@@ -122,6 +135,8 @@ def main(screen):
             if len(stack) > 0:
                 l = set.union(l, stack.pop())
             txtwin.addstr(1, 3, "Search >>>  "+s)
+            if aboutToDelete:
+                aboutToDelete = False
         elif c == 259 or c == curses.KEY_PPAGE:
             # ----------------------------------------
             # Up Arrow/PGUP: Go up in the menu
@@ -130,6 +145,8 @@ def main(screen):
                 pos = len(l)-1
             else:
                 pos -= 1
+            if aboutToDelete:
+                aboutToDelete = False
         elif c == 258 or c == curses.KEY_NPAGE:
             # ----------------------------------------
             # Down Arrow: Go Down in the menu
@@ -138,6 +155,8 @@ def main(screen):
                 pos = 0
             else:
                 pos += 1
+            if aboutToDelete:
+                aboutToDelete = False
         elif c == 10:
             # ----------------------------------------
             # Enter/Return: <action> password
@@ -150,22 +169,22 @@ def main(screen):
                 if mode == 0:
                     proc = Popen(["pass", k[pos]], stdout=PIPE, stderr=PIPE)
                     stdout, stderr = proc.communicate()
+                    running = False
                 if mode == 1:
                     proc = Popen(["pass", "-c", k[pos]],
                                  stdout=PIPE, stderr=PIPE)
                     if proc.returncode == 0:
                         quit()
+                    running = False
                 elif mode == 2:
-                    proc = Popen(["pass", "edit", k[pos]],
-                                 stdout=PIPE, stderr=PIPE)
-                    if proc.returncode == 0:
-                        quit()
+                    proc = Popen(["pass", "edit", k[pos]]).wait()
+                    running = False
                 elif mode == 3:
-                    proc = Popen(["pass", "rm", k[pos]],
-                                 stdout=PIPE, stderr=PIPE)
-                    if proc.returncode == 0:
-                        quit()
-                running = False
+                    if not aboutToDelete:
+                        aboutToDelete = True
+                    else:
+                        remove(join(expanduser("~/.password-store"), k[pos])+".gpg")
+                        running = False
         elif c == 260:
             # ----------------------------------------
             # Left arrow: Change mode left
@@ -173,6 +192,8 @@ def main(screen):
             mode -= 1
             if mode < 0:
                 mode = 3
+            if aboutToDelete:
+                aboutToDelete = False
         elif c == 261:
             # ----------------------------------------
             # Right arrow: Change mode Right
@@ -180,6 +201,8 @@ def main(screen):
             mode += 1
             if mode > 3:
                 mode = 0
+            if aboutToDelete:
+                aboutToDelete = False
             # ----------------------------------------
             # Ignore some Keys
             # ----------------------------------------
@@ -196,6 +219,8 @@ def main(screen):
             l = functions.Search(l, s)
             stack.append(oldl-l)
             del oldl
+            if aboutToDelete:
+                aboutToDelete = False
 
 
 curses.wrapper(main)
