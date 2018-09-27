@@ -11,8 +11,9 @@ import curses
 import functions
 from os import chdir, environ, remove
 from os.path import join, expanduser
-from sys import argv
+# from sys import argv
 from subprocess import Popen, PIPE
+import argparse
 
 # --------------------
 # Environment Setup
@@ -20,6 +21,7 @@ from subprocess import Popen, PIPE
 chdir(environ["HOME"])
 stdout, stderr = b"", b""
 status = 0
+mode = 0      # 0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
 
 
 def main(screen):
@@ -33,32 +35,11 @@ def main(screen):
     l = dirlist
     ignore_keys = set.union({f for f in range(265, 328)}, {262, 260,
                             261, ord("\t"), curses.KEY_IC})
-    mode = 0      # 0=Open - 1=Copy to clipboard - 2=Edit - 3=Delete
+    global mode
     global stdout
     global stderr
     global aboutToDelete
     aboutToDelete = False
-    # --------------------
-    # Argument detection
-    # --------------------
-    if len(argv) > 1:
-        if argv[1] in {"-c", "--clip", "--copy"}:
-            mode = 1
-        if argv[1] in {"-e", "--edit"}:
-            mode = 2
-        if argv[1] in {"-d", "--delete"}:
-            mode = 3
-        if argv[1] in {"-h", "--help"}:
-            print("Npass - A simple ncurses frontend for Pass")
-            print("Usage:")
-            print("npass  -  Show password list")
-            print("npass [-c,--clip]  -  Open npass in copy mode")
-            print("npass [-e,--edit]  -  Open npass in edit mode")
-            print("npass [-d,--delete]  -  Open npass in delete mode")
-            print("npass [-h,--help]  -  Show this help page")
-            quit()
-    if len(argv) > 2:
-        quit("Too many arguments\nTry with fewer arguments.")
     # --------------------
     # Curses Windows
     # --------------------
@@ -182,7 +163,8 @@ def main(screen):
                     if not aboutToDelete:
                         aboutToDelete = True
                     else:
-                        remove(join(expanduser("~/.password-store"), k[pos])+".gpg")
+                        remove(join(expanduser("~/.password-store"),
+                                    k[pos])+".gpg")
                         running = False
         elif c == 260:
             # ----------------------------------------
@@ -219,13 +201,30 @@ def main(screen):
                 aboutToDelete = False
 
 
-curses.wrapper(main)
-stdout = stdout.decode("UTF-8").strip("\n")
-stderr = stderr.decode("UTF-8").strip("\n")
-if stdout != "":
-    print("----------<>----------")
-    print(stdout)
-    print("----------<>----------")
-if stderr != "":
-    print("Errors detected:")
-    print(stderr)
+if __name__ == "__main__":
+    # --------------------
+    # Argument detection
+    # --------------------
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-c", "--clip", "--copy",
+                       help="Open npass in copy mode", action="store_const",
+                       dest="mode", const=1, default=0)
+    group.add_argument("-e", "--edit", help="Open npass in edit mode",
+                       action="store_const", dest="mode", const=2,
+                       default=0)
+    group.add_argument("-d", "--delete", help="Open npass in delete mode",
+                       action="store_const", dest="mode", const=3,
+                       default=0)
+    args = parser.parse_args()
+    mode = args.mode
+    curses.wrapper(main)
+    stdout = stdout.decode("UTF-8").strip("\n")
+    stderr = stderr.decode("UTF-8").strip("\n")
+    if stdout != "":
+        print("----------<>----------")
+        print(stdout)
+        print("----------<>----------")
+    if stderr != "":
+        print("Errors detected:")
+        print(stderr)
