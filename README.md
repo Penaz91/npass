@@ -1,5 +1,8 @@
 Npass
 =====
+
+![Status:Active](https://img.shields.io/badge/Project_Status-Active-brightgreen.svg)
+
 A NCurses frontend for the [Pass password manager](http://www.zx2c4.com/projects/password-store/)
 
 Usage
