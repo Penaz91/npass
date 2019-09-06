@@ -8,6 +8,8 @@ See the LICENSE file for the full license.
 """
 
 from .state import State
+from os.path import expanduser, join
+from os import remove
 import curses
 
 
@@ -21,7 +23,7 @@ class DeleteState(State):
         """
         Initializes The State
         """
-        State.__init__(self)
+        State.__init__(self, True)
         self.name = "Delete"
         self.font = curses.color_pair(1)
         self.aboutToDelete = False
@@ -38,8 +40,24 @@ class DeleteState(State):
             "font": self.font
         }
 
-    def executeAction(self):
+    def revertDeleteState(self):
+        """
+        Reverts the aboutToDelete State to false
+        """
+        self.aboutToDelete = False
+        self.font = curses.color_pair(1)
+
+    def executeAction(self, **kwargs):
         """
         Executes the Display Action
         """
-        pass
+        pwid = kwargs.get("pwid", None)
+        passpath = kwargs.get("passpath", "~/.password-store/")
+        if not self.aboutToDelete:
+            self.aboutToDelete = True
+            self.font = curses.color_pair(2)
+        else:
+            if pwid:
+                remove(join(expanduser(passpath),
+                            pwid)+".gpg")
+        return True

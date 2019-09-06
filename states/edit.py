@@ -9,6 +9,7 @@ See the LICENSE file for the full license.
 
 from .state import State
 import curses
+from subprocess import Popen
 
 
 class EditState(State):
@@ -37,8 +38,12 @@ class EditState(State):
             "font": self.font
         }
 
-    def executeAction(self):
+    def executeAction(self, **kwargs):
         """
         Executes the Display Action
         """
-        pass
+        curses.endwin()
+        pwid = kwargs.get("pwid", None)
+        if pwid:
+            Popen(["pass", "edit", pwid]).wait()
+        return False

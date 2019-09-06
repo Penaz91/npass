@@ -83,6 +83,8 @@ class Npass(object):
             self.modeIndex -= 1
             if self.modeIndex < 0:
                 self.modeIndex = 3
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
         elif c == 261:
             # ----------------------------------------
             # Right arrow: Change mode Right
@@ -90,11 +92,15 @@ class Npass(object):
             self.modeIndex += 1
             if self.modeIndex > 3:
                 self.modeIndex = 0
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
         elif c == 127 or c == curses.KEY_DC:
             # ----------------------------------------
             # Backspace/Delete Char: pop old content from stack
             # ----------------------------------------
             self.searchString = self.searchString[:-1]
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
         elif c == 10:
             # ----------------------------------------
             # Enter/Return: <action> password
@@ -103,6 +109,12 @@ class Npass(object):
             # Should continue running
             self.running = self.mode.executeAction(
                 pwid=self.filteredPasswordList[self.cursorIndex])
+            if self.mode.requires_list_update:
+                self.passwordList = getPasswordList()
+                self.filteredPasswordList = FuzzyFilter(
+                    self.passwordList,
+                    self.searchString
+                )
         elif c == 259 or c == curses.KEY_PPAGE:
             # ----------------------------------------
             # Up Arrow/PGUP: Go up in the menu
@@ -111,6 +123,8 @@ class Npass(object):
                 self.cursorIndex = len(self.filteredPasswordList) - 1
             else:
                 self.cursorIndex -= 1
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
         elif c == 258 or c == curses.KEY_NPAGE:
             # ----------------------------------------
             # Down Arrow: Go Down in the menu
@@ -119,11 +133,16 @@ class Npass(object):
                 self.cursorIndex = 0
             else:
                 self.cursorIndex += 1
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
         else:
             # ----------------------------------------
             # Letters/Numbers: perform search
             # ----------------------------------------
             self.searchString += chr(c)
+            self.cursorIndex = 0
+            if isinstance(self.mode, DeleteState):
+                self.mode.revertDeleteState()
 
     def updateStatus(self):
         """

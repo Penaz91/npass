@@ -16,6 +16,17 @@ class State(metaclass=ABCMeta):
     Defines a generic structure for a State of Npass
     """
 
+    def __init__(self, requires_list_update=False):
+        """
+        Initializes The State
+
+        :requires_list_update: Defines if the state requires an update of
+                               the password List
+        :returns: TODO
+
+        """
+        self.requires_list_update = requires_list_update
+
     @abstractmethod
     def executeAction(self, **kwargs):
         """

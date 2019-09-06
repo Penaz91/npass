@@ -9,6 +9,7 @@ See the LICENSE file for the full license.
 
 from .state import State
 import curses
+from subprocess import Popen, PIPE
 
 
 class ClipState(State):
@@ -37,8 +38,17 @@ class ClipState(State):
             "font": self.font
         }
 
-    def executeAction(self):
+    def executeAction(self, **kwargs):
         """
         Executes the Display Action
         """
-        pass
+        curses.endwin()
+        pwid = kwargs.get("pwid", None)
+        if pwid:
+            proc = Popen(["pass", "-c", pwid],
+                         stdout=PIPE, stderr=PIPE)
+            # If we don't quit, the program will be left hanging until the
+            # memory gets cleaned
+            if proc.returncode == 0:
+                quit()
+        return False
