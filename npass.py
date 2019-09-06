@@ -34,10 +34,17 @@ class Npass(object):
         self.cursorIndex = 0   # The index of the selected password in the pad
         self.searchString = ""  # The String searched by the user
         self.screeny, self.screenx = screen.getmaxyx()
-        self.needsUpdate = True  # Set to true for 1st update
         # Initialize Color pairs
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
+        # Initialize Windows and Pads
+        self.textInputWindow = curses.newwin(
+            3,  # Window Height
+            self.screenx - 3,  # Window Width
+            self.screeny - 3,  # Y Position
+            1  # X Position
+        )
+        self.textInputWindow.border()
 
     def handleInput(self):
         """
@@ -59,7 +66,6 @@ class Npass(object):
             self.modeIndex -= 1
             if self.modeIndex < 0:
                 self.modeIndex = 3
-            self.needsUpdate = True
         elif c == 261:
             # ----------------------------------------
             # Right arrow: Change mode Right
@@ -67,7 +73,16 @@ class Npass(object):
             self.modeIndex += 1
             if self.modeIndex > 3:
                 self.modeIndex = 0
-            self.needsUpdate = True
+        elif c == 127 or c == curses.KEY_DC:
+            # ----------------------------------------
+            # Backspace/Delete Char: pop old content from stack
+            # ----------------------------------------
+            self.searchString = self.searchString[:-1]
+        else:
+            # ----------------------------------------
+            # Letters/Numbers: perform search
+            # ----------------------------------------
+            self.searchString += chr(c)
 
     def updateStatus(self):
         """
@@ -77,6 +92,23 @@ class Npass(object):
         """
         # Refresh the state
         self.mode = self.stateList[self.modeIndex]
+        # Check if window is resized
+        resized = curses.is_term_resized(self.screeny, self.screenx)
+        if resized:
+            # Resize the main window
+            self.screeny, self.screenx = self.screen.getmaxyx()
+            self.screen.clear()
+            curses.resizeterm(self.screeny, self.screenx)
+            self.screen.refresh()
+            # Resize and reposition the Windows and pads
+            self.textInputWindow.resize(
+                3,  # Window Height
+                self.screenx - 3,  # Window Width
+            )
+            self.textInputWindow.mvwin(
+                self.screeny - 3,  # New Y
+                1  # New X
+            )
 
     def drawWindow(self):
         """
@@ -87,25 +119,32 @@ class Npass(object):
         """
         # Clear Screen
         self.screen.clear()
+        self.textInputWindow.clear()
         # Add the nPass Title in the middle of the 2nd row
-        self.screen.addstr(2, int((self.screenx-5)/2), "nPass", curses.A_BOLD)
+        self.screen.addstr(2, int((self.screenx-5)//2), "nPass", curses.A_BOLD)
         # Gets the current State and writes its defining information
         modeMetadata = self.mode.getStateMetadata()
         titleLen = len(modeMetadata["name"])
         self.screen.addstr(
             3,
-            int((self.screenx - (titleLen + 6))/2),
+            int((self.screenx - (titleLen + 6))//2),
             "<- {} ->".format(modeMetadata["name"]),
             modeMetadata["font"]
         )
         # Add the separator in line 4
         self.screen.hline(4, 1, curses.ACS_HLINE, self.screenx-2)
-        # Add a border to the screen
+        # Add a border to the screen and windows
         self.screen.border()
+        self.textInputWindow.border()
+        # Write The search Prompt for the search window
+        self.textInputWindow.addstr(
+            1,
+            3,
+            "Search >>> {}".format(self.searchString)
+        )
         # Draw the screen
         self.screen.refresh()
-        # The screen does not need to update anymore
-        self.needsUpdate = False
+        self.textInputWindow.refresh()
 
     def run(self):
         """
@@ -117,6 +156,5 @@ class Npass(object):
         self.drawWindow()  # Does the first paint
         while self.running:
             self.handleInput()
-            if self.needsUpdate:
-                self.updateStatus()
-                self.drawWindow()
+            self.updateStatus()
+            self.drawWindow()
