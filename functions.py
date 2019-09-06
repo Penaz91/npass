@@ -1,57 +1,56 @@
-#!/usr/bin/env python3
-# -----------------------------
-# Functions.py
-# Part of the npass project
-# By Penaz
-# -----------------------------
+"""
+Npass: Yet Another NCurses UI for Pass
+List and Search Functions
 
-# -----------------------------
-# Imports
-# -----------------------------
-from os.path import join, relpath, splitext, expanduser
-from os import walk
+Copyright © 2014-2019, Daniele Penazzo.
+The use of this code is governed by the MIT license attached.
+See the LICENSE file for the full license.
+"""
+
 import re
+from os import walk
+from os.path import join, relpath, splitext, expanduser
 
 
-# -----------------------------
-# Filter the set "l"
-# -----------------------------
-def Search(coll, inp):
+def FuzzyFilter(collection, searchInput):
+    """
+    Fuzzy Filters a defined collection
+
+    :collection: The collection to filter
+    :searchInput: The input string to fuzzy match
+    :returns: A list of suggestions
+
+    """
     suggestions = []
-    pattern = '.*?'.join(inp)   # Converts 'djm' to 'd.*?j.*?m'
+    pattern = '.*?'.join(searchInput)   # Converts 'djm' to 'd.*?j.*?m'
     regex = re.compile(pattern, re.IGNORECASE)  # Compiles a regex.
-    for item in coll:
-        match = regex.search(item, re.IGNORECASE)   # Checks if the current item matches the regex.
+    for item in collection:
+        # Current item matches the regex?
+        match = regex.search(item, re.IGNORECASE)
         if match:
             suggestions.append((len(match.group()), match.start(), item))
-    return {x for _, _, x in sorted(suggestions)}
+    return sorted([x for _, _, x in suggestions])
 
 
-# -----------------------------
-# List all passwords
-# -----------------------------
-def ListDirs():
-    exclude = set([".gpg-id", ".git"])
-    x = {join(dp, f) for dp, dn, fn in walk(expanduser("~/.password-store/"))
-         for f in fn}
-    toexclude = set([])
+def getPasswordList(password_dir="~/.password-store/"):
+    """
+    Given a password directory, returns the list of passwords present,
+    relative to that directory
+
+    :password_dir: A string representing the password directory, defaults
+                   to '~/.password-store/'
+    :returns: A list of files, relative to the password directory,
+              without extensions
+    """
+    exclude = {".gpg-id", ".git"}
+    fileSet = {join(dp, f)
+               for dp, dn, fn in walk(expanduser(password_dir))
+               for f in fn}
+    toExclude = set()
     for exclusion in exclude:
-        toexclude = set([item for item in x if exclusion in item])
-        x = x.difference(toexclude)
-    y = {relpath(d, ".password-store") for d in x}
-    x = {splitext(l)[0] for l in y}
-    del y
-    return x
-
-
-# -----------------------------
-# Display condensed paths if necessary
-# -----------------------------
-def ShortenPath(string, rowl):
-    if len(string) > rowl-5:
-        # Shorten the string
-        l = string.split("/")
-        return join(join(l[0], *[".." for i in range(len(l)-2)]), l[len(l)-1])
-    else:
-        # Return the same string
-        return string
+        toExclude = {item for item in fileSet if exclusion in item}
+        fileSet = fileSet.difference(toExclude)
+    relativeFileSet = {relpath(item, expanduser(password_dir))
+                       for item in fileSet}
+    noExtFileSet = [splitext(item)[0] for item in relativeFileSet]
+    return sorted(noExtFileSet)
