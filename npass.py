@@ -8,6 +8,7 @@ See the LICENSE file for the full license.
 """
 
 import curses
+from functions import getPasswordList, FuzzyFilter
 from states import ViewState, ClipState, EditState, DeleteState
 
 
@@ -45,6 +46,16 @@ class Npass(object):
             1  # X Position
         )
         self.textInputWindow.border()
+        self.passwordList = getPasswordList()
+        self.filteredPasswordList = self.passwordList
+        self.passWin = curses.newpad(
+            len(self.filteredPasswordList)+2,  # Height of the pad
+            self.screenx - 3  # Width of the pad
+        )
+        # In case the length of the password list is longer than the space
+        # available or the pad, then scrolling will be needed
+        self.needsScrolling = self.screeny - 10 \
+            < len(self.filteredPasswordList) - 2
         # Initialize keys to ignore
         self.ignored_keys = set.union({f for f in range(265, 328)}, {262,
                                       ord("\t"), curses.KEY_IC,
@@ -84,6 +95,27 @@ class Npass(object):
             # Backspace/Delete Char: pop old content from stack
             # ----------------------------------------
             self.searchString = self.searchString[:-1]
+        elif c == 10:
+            # ----------------------------------------
+            # Enter/Return: <action> password
+            # ----------------------------------------
+            self.mode.executeAction()
+        elif c == 259 or c == curses.KEY_PPAGE:
+            # ----------------------------------------
+            # Up Arrow/PGUP: Go up in the menu
+            # ----------------------------------------
+            if self.cursorIndex == 0:
+                self.cursorIndex = len(self.filteredPasswordList) - 1
+            else:
+                self.cursorIndex -= 1
+        elif c == 258 or c == curses.KEY_NPAGE:
+            # ----------------------------------------
+            # Down Arrow: Go Down in the menu
+            # ----------------------------------------
+            if self.cursorIndex == len(self.filteredPasswordList) - 1:
+                self.cursorIndex = 0
+            else:
+                self.cursorIndex += 1
         else:
             # ----------------------------------------
             # Letters/Numbers: perform search
@@ -115,6 +147,12 @@ class Npass(object):
                 self.screeny - 3,  # New Y
                 1  # New X
             )
+            # Recalculate the need for scrolling
+            self.needsScrolling = self.screeny - 10 \
+                < len(self.filteredPasswordList) - 2
+        # Recalculate the list
+        self.filteredPasswordList = FuzzyFilter(self.passwordList,
+                                                self.searchString)
 
     def drawWindow(self):
         """
@@ -126,6 +164,7 @@ class Npass(object):
         # Clear Screen
         self.screen.clear()
         self.textInputWindow.clear()
+        self.passWin.clear()
         # Add the nPass Title in the middle of the 2nd row
         self.screen.addstr(2, int((self.screenx-5)//2), "nPass", curses.A_BOLD)
         # Gets the current State and writes its defining information
@@ -142,6 +181,13 @@ class Npass(object):
         # Add a border to the screen and windows
         self.screen.border()
         self.textInputWindow.border()
+        # Fill the pad with the password list
+        for n in range(len(self.filteredPasswordList)):
+            if n == self.cursorIndex:
+                self.passWin.addstr(
+                    n, 3, self.filteredPasswordList[n], curses.A_REVERSE)
+            else:
+                self.passWin.addstr(n, 3, self.filteredPasswordList[n])
         # Write The search Prompt for the search window
         self.textInputWindow.addstr(
             1,
@@ -150,6 +196,27 @@ class Npass(object):
         )
         # Draw the screen
         self.screen.refresh()
+        # If i passed 1/4th of the pad, with scrolling necessary,
+        # start scrolling, so you can see the remaining passwords
+        fourthOfPadHeight = (self.screeny - 5) // 4
+        if self.cursorIndex >= fourthOfPadHeight and self.needsScrolling:
+            self.passWin.refresh(
+                self.cursorIndex - fourthOfPadHeight,  # First pad row to show
+                1,  # First pad column to show
+                5,  # First row of the window that has the pad
+                1,  # First column of the window that has the pad
+                self.screeny - 5,  # Last row of the window that has the pad
+                self.screenx - 3,  # Last column of the window that has the pad
+            )
+        else:
+            self.passWin.refresh(
+                0,  # First pad row to show
+                1,  # First pad column to show
+                5,  # First row of the window that has the pad
+                1,  # First column of the window that has the pad
+                self.screeny - 5,  # Last row of the window that has the pad
+                self.screenx - 3,  # Last column of the window that has the pad
+            )
         self.textInputWindow.refresh()
 
     def run(self):

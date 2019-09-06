@@ -41,4 +41,4 @@ class ViewState(State):
         """
         Executes the Display Action
         """
-        pass
+        exit()
