@@ -9,6 +9,7 @@ See the LICENSE file for the full license.
 
 from .state import State
 import curses
+from subprocess import Popen, PIPE
 
 
 class ViewState(State):
@@ -37,8 +38,26 @@ class ViewState(State):
             "font": self.font
         }
 
-    def executeAction(self):
+    def executeAction(self, **kwargs):
         """
         Executes the Display Action
+
+        :returns: A boolean defining if the program should keep running
         """
-        exit()
+        # Exit Curses Mode, we're closing the program anyway
+        curses.endwin()
+        pwid = kwargs.get("pwid", None)
+        if pwid:
+            proc = Popen(["pass", pwid], stdout=PIPE, stderr=PIPE)
+            stdout, stderr = proc.communicate()
+            stdout = stdout.decode("UTF-8").strip("\n")
+            stderr = stderr.decode("UTF-8").strip("\n")
+            if stdout != "":
+                print("Password for: " + pwid)
+                print("----------<>----------")
+                print(stdout)
+                print("----------<>----------")
+            if stderr != "":
+                print(stderr)
+        # Tell the rest of the software we're closing down
+        return False

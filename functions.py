@@ -18,7 +18,7 @@ def FuzzyFilter(collection, searchInput):
 
     :collection: The collection to filter
     :searchInput: The input string to fuzzy match
-    :returns: An ordered list of suggestions, sorted by length of the match
+    :returns: A list of suggestions
 
     """
     suggestions = []
@@ -29,7 +29,7 @@ def FuzzyFilter(collection, searchInput):
         match = regex.search(item, re.IGNORECASE)
         if match:
             suggestions.append((len(match.group()), match.start(), item))
-    return [x for _, _, x in sorted(suggestions, reverse=True)]
+    return sorted([x for _, _, x in suggestions])
 
 
 def getPasswordList(password_dir="~/.password-store/"):
@@ -53,4 +53,4 @@ def getPasswordList(password_dir="~/.password-store/"):
     relativeFileSet = {relpath(item, expanduser(password_dir))
                        for item in fileSet}
     noExtFileSet = [splitext(item)[0] for item in relativeFileSet]
-    return noExtFileSet
+    return sorted(noExtFileSet)

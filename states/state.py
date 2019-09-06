@@ -17,7 +17,7 @@ class State(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def executeAction(self):
+    def executeAction(self, **kwargs):
         """
         Executes the defined action for this state
 

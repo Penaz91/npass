@@ -99,7 +99,10 @@ class Npass(object):
             # ----------------------------------------
             # Enter/Return: <action> password
             # ----------------------------------------
-            self.mode.executeAction()
+            # Executes action and uses its return value to detect if npass
+            # Should continue running
+            self.running = self.mode.executeAction(
+                pwid=self.filteredPasswordList[self.cursorIndex])
         elif c == 259 or c == curses.KEY_PPAGE:
             # ----------------------------------------
             # Up Arrow/PGUP: Go up in the menu
