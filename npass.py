@@ -45,6 +45,10 @@ class Npass(object):
             1  # X Position
         )
         self.textInputWindow.border()
+        # Initialize keys to ignore
+        self.ignored_keys = set.union({f for f in range(265, 328)}, {262,
+                                      ord("\t"), curses.KEY_IC,
+                                      curses.KEY_RESIZE})
 
     def handleInput(self):
         """
@@ -54,6 +58,8 @@ class Npass(object):
 
         """
         c = self.screen.getch()
+        if c in self.ignored_keys:
+            return
         if c == 27:
             # ----------------------------------------
             # Escape: Terminate
