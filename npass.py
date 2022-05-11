@@ -94,7 +94,7 @@ class Npass(object):
                 self.modeIndex = 0
             if isinstance(self.mode, DeleteState):
                 self.mode.revertDeleteState()
-        elif c == 127 or c == curses.KEY_DC:
+        elif c in (127, curses.KEY_DC, curses.KEY_BACKSPACE):
             # ----------------------------------------
             # Backspace/Delete Char: pop old content from stack
             # ----------------------------------------
