@@ -43,14 +43,22 @@ def getPasswordList(password_dir="~/.password-store/"):
               without extensions
     """
     exclude = {".gpg-id", ".git"}
-    fileSet = {join(dp, f)
-               for dp, dn, fn in walk(expanduser(password_dir))
-               for f in fn}
+    # Get all files in the password_dir
+    fileSet = {
+        join(dirpath, fname)
+        for dirpath, dirname, filenames in walk(expanduser(password_dir))
+        for fname in filenames
+    }
+    # Exclude what we don't care about
     toExclude = set()
     for exclusion in exclude:
         toExclude = {item for item in fileSet if exclusion in item}
         fileSet = fileSet.difference(toExclude)
-    relativeFileSet = {relpath(item, expanduser(password_dir))
-                       for item in fileSet}
+    # Get the relative path, pinned on the password_dir
+    relativeFileSet = {
+        relpath(item, expanduser(password_dir))
+        for item in fileSet
+    }
+    # Remove extensions
     noExtFileSet = [splitext(item)[0] for item in relativeFileSet]
     return sorted(noExtFileSet)
