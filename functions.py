@@ -7,12 +7,16 @@ The use of this code is governed by the MIT license attached.
 See the LICENSE file for the full license.
 """
 
+import json
 import re
-from os import walk
-from os.path import join, relpath, splitext, expanduser
+from datetime import date
+from os import walk, getenv
+from os.path import join, relpath, splitext, expanduser, isdir, exists
+
+_frecencylist_: str = join(getenv("HOME", "/"), ".npass_frecency")
 
 
-def FuzzyFilter(collection, searchInput):
+def FuzzyFilter(frecency_dict, collection, searchInput):
     """
     Fuzzy Filters a defined collection
 
@@ -29,10 +33,13 @@ def FuzzyFilter(collection, searchInput):
         match = regex.search(item, re.IGNORECASE)
         if match:
             suggestions.append((len(match.group()), match.start(), item))
-    return sorted([x for _, _, x in suggestions])
+    return sorted(
+        [x for _, _, x in suggestions],
+        key=lambda x: sorter(frecency_dict, x)
+    )
 
 
-def getPasswordList(password_dir="~/.password-store/"):
+def getPasswordList(frecency_dict: dict, password_dir="~/.password-store/"):
     """
     Given a password directory, returns the list of passwords present,
     relative to that directory
@@ -61,4 +68,39 @@ def getPasswordList(password_dir="~/.password-store/"):
     }
     # Remove extensions
     noExtFileSet = [splitext(item)[0] for item in relativeFileSet]
-    return sorted(noExtFileSet)
+    return sorted(noExtFileSet, key=lambda x: sorter(frecency_dict, x))
+
+
+def sorter(frecency, item):
+    fr_item = frecency.get(item, [0, None])
+    if fr_item[1] is None:
+        return (fr_item[0], None, item)
+    return (fr_item[0], date.today() - date.fromisoformat(fr_item[1]), item)
+
+
+def loadfrecencylist() -> dict:
+    """
+    Loads the npass frecency list
+
+    Returns
+    -------
+    dict
+        Representation of the frecency list
+    """
+    if exists(_frecencylist_) and not isdir(_frecencylist_):
+        with open(_frecencylist_) as fh:
+            return json.load(fh)
+    return {}
+
+
+def savefrecencylist(frec: dict):
+    """
+    Saves the given frecency list to file
+
+    Parameters
+    ----------
+    frec : dict
+        The dictionary containing the frecency list to save
+    """
+    with open(_frecencylist_, "w") as fh:
+        json.dump(frec, fh)

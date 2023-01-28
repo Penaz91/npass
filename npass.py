@@ -8,7 +8,10 @@ See the LICENSE file for the full license.
 """
 
 import curses
-from functions import getPasswordList, FuzzyFilter
+from datetime import date
+from functions import (
+    getPasswordList, FuzzyFilter, loadfrecencylist, savefrecencylist
+)
 from states import ViewState, ClipState, EditState, DeleteState
 
 
@@ -46,7 +49,9 @@ class Npass(object):
             1  # X Position
         )
         self.textInputWindow.border()
-        self.passwordList = getPasswordList()
+        # Load frecency list
+        self.frecency = loadfrecencylist()
+        self.passwordList = getPasswordList(self.frecency)
         self.filteredPasswordList = self.passwordList
         self.passWin = curses.newpad(
             len(self.filteredPasswordList)+2,  # Height of the pad
@@ -115,6 +120,9 @@ class Npass(object):
                     self.passwordList,
                     self.searchString
                 )
+            oldfrec = self.frecency.get(self.filteredPasswordList[self.cursorIndex], [0, None])
+            self.frecency[self.filteredPasswordList[self.cursorIndex]] = [oldfrec[0] - 1, date.today().isoformat()]
+
         elif c == 259 or c == curses.KEY_PPAGE:
             # ----------------------------------------
             # Up Arrow/PGUP: Go up in the menu
@@ -173,7 +181,8 @@ class Npass(object):
             self.needsScrolling = self.screeny - 10 \
                 < len(self.filteredPasswordList) - 2
         # Recalculate the list
-        self.filteredPasswordList = FuzzyFilter(self.passwordList,
+        self.filteredPasswordList = FuzzyFilter(self.frecency,
+                                                self.passwordList,
                                                 self.searchString)
 
     def drawWindow(self):
@@ -253,3 +262,4 @@ class Npass(object):
             self.handleInput()
             self.updateStatus()
             self.drawWindow()
+        savefrecencylist(self.frecency)
